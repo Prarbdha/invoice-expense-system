@@ -1,0 +1,13 @@
+{
+  "name": "invoice-expense-system",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "bash build.sh",
+    "start": "cd server && npx prisma migrate deploy && npm start",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: invoice-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: invoice_expense_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - invoice-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: invoice-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres123@postgres:5432/invoice_expense_db?schema=public
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      PORT: 5000
+      NODE_ENV: production
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_SECURE: false
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_FROM_NAME: Invoice Pro
+      EMAIL_FROM_ADDRESS: ${EMAIL_USER}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    networks:
+      - invoice-network
+    volumes:
+      - ./server/uploads:/app/uploads
+    command: sh -c "npx prisma migrate deploy && npm start"
+
+  # Frontend
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: invoice-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - invoice-network
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+
+volumes:
+  postgres_data:
+
+networks:
+  invoice-network:
+    driver: bridge

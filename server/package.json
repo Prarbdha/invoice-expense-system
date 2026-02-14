@@ -1,13 +1,12 @@
 {
   "name": "invoice-expense-backend",
   "version": "1.0.0",
+  
   "scripts": {
-    "dev": "nodemon",
+    "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "migrate": "npx prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.8.0",
@@ -34,4 +33,9 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
+
+  
+
 }
+
+  
