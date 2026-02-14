@@ -109,20 +109,8 @@ The application will be available at:
 
 ## 🌐 Deployment
 
-### Frontend (Vercel)
-- Push to GitHub
-- Import project in Vercel
-- Deploy
-
-### Backend Options
 - Railway
-- Render
-- AWS EC2
-- DigitalOcean
 
-## 📄 License
-
-MIT
 
 ## 👥 Author
 
