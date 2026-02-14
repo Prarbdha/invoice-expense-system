@@ -1,0 +1,141 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  companyName   String?   @map("company_name")
+  companyLogo   String?   @map("company_logo")
+  taxId         String?   @map("tax_id")
+  address       String?
+  phone         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  clients       Client[]
+  invoices      Invoice[]
+  expenses      Expense[]
+  categories    ExpenseCategory[]
+
+  @@map("users")
+}
+
+model Client {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  name        String
+  email       String
+  phone       String?
+  address     String?
+  taxId       String?   @map("tax_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
+
+  @@map("clients")
+}
+
+model Invoice {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  clientId        String        @map("client_id")
+  invoiceNumber   String        @unique @map("invoice_number")
+  issueDate       DateTime      @map("issue_date")
+  dueDate         DateTime      @map("due_date")
+  subtotal        Decimal       @db.Decimal(10, 2)
+  taxRate         Decimal       @db.Decimal(5, 2) @map("tax_rate")
+  taxAmount       Decimal       @db.Decimal(10, 2) @map("tax_amount")
+  total           Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  status          InvoiceStatus @default(DRAFT)
+  paymentDate     DateTime?     @map("payment_date")
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client          Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items           InvoiceItem[]
+  payments        Payment[]
+
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String   @map("invoice_id")
+  description String
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2) @map("unit_price")
+  total       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  invoiceId     String   @map("invoice_id")
+  amount        Decimal  @db.Decimal(10, 2)
+  paymentDate   DateTime @map("payment_date")
+  paymentMethod String   @map("payment_method")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model ExpenseCategory {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  name      String
+  color     String    @default("#3B82F6")
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses  Expense[]
+
+  @@map("expense_categories")
+}
+
+model Expense {
+  id            String           @id @default(uuid())
+  userId        String           @map("user_id")
+  categoryId    String           @map("category_id")
+  amount        Decimal          @db.Decimal(10, 2)
+  date          DateTime
+  description   String?
+  receiptUrl    String?          @map("receipt_url")
+  vendor        String?
+  taxDeductible Boolean          @default(false) @map("tax_deductible")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      ExpenseCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}
