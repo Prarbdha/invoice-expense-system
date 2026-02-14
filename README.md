@@ -114,8 +114,6 @@ The application will be available at:
 
 ## 👥 Author
 
-Your Name - [@yourusername](https://github.com/yourusername)
+Your Name - [@yourusername](https://github.com/Prarbdaha)
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
